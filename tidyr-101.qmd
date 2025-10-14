@@ -13,6 +13,7 @@ library(here)
 #| Message: false
 library(ggplot2)
 library(dplyr)
+library(tidyr)
 ```
 
 ```{r}
@@ -55,3 +56,22 @@ ggplot(EuStockMarkets, aes(x = date, y = CAC)) +
   geom_line()
 ```
 
+## Two indexes on the same graphical representation ? 
+
+### Poor mzn's solution 
+
+```{r}
+ggplot(EuStockMarkets, aes(x = date, y = CAC)) +
+  geom_line() +
+  geom_line(mapping = aes(y = DAX))
+```
+By adding diff mapping we add another y for the same x
+
+
+```{r}
+ggplot(EuStockMarkets, aes(x = date, y = CAC)) +
+  geom_line(colour = "steelblue") +
+  geom_line(mapping = aes(y = DAX), colour = "purple")
+```
+
+Pb : if we wanted to use this for all variables, we would have to add a geomline per variable (long)
