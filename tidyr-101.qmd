@@ -75,3 +75,46 @@ ggplot(EuStockMarkets, aes(x = date, y = CAC)) +
 ```
 
 Pb : if we wanted to use this for all variables, we would have to add a geomline per variable (long)
+
+
+
+### Tidyr solution
+
+Wide format vs long format 
+Wide format = one column per variable 
+Long format = in which row we specify the variables Ex : if we have 5 values for 1991, in each row it will be written 1991 instead of having a column to write 1991 
+
+Long format is more adapted for ggplot because we can use group to regroup similar values 
+(But here we have a wide )
+
+```{r}
+EuStockMarkets |>
+  pivot_longer(date)
+```
+Date is the indexing variable, it is excluded from the pivoting and its the way we identify an object 
+
+We want better names 
+```{r}
+EuStockMarkets |>
+  pivot_longer(date, names_to = "index") |>
+  slice_head(n=10) |>  ## better looking table
+  knitr::kable()
+```
+Names to parameter allows to change the name of the name object 
+Value to parameters allows to change the value 
+
+
+```{r}
+EuStockMarkets |>
+  pivot_longer(!date, names_to = "index") |>
+  ggplot(aes(x = date, y = value, color = index)) +
+  geom_line()
+```
+
+```{r}
+EuStockMarkets |>
+  pivot_longer(!date, names_to = "index") |>
+  ggplot(aes(x = date, y = value, group = index)) +
+  geom_line()
+```
+
