@@ -12,6 +12,7 @@ library(here)
 ```{r}
 #| Message: false
 library(ggplot2)
+library(dplyr)
 ```
 
 ```{r}
@@ -32,7 +33,25 @@ x = time(EuStockMarkets) = apply the time function to the data frame (EuStockMar
 
 But this does not really match ggplot method of functioning so we do : 
 ```{r}
-ggplot(EuStockMarkets, aes(y = DAX, x = time(EuStockMarkets))) +
+EuStockMarkets <-
+  EuStockMarkets |> 
+  as_tibble() |>  ## coule be as.data.frame
+  mutate(date = as.numeric(time(EuStockMarkets)))
+  
+```
+
+To transform eu stock markets xe could have used as.data.frame instead of as.tibble
+time only work on the not transformed yet variable (time series) if we were to do it after, eustockmarkets would not be a time series anymore
+
+
+
+```{r}
+ggplot(EuStockMarkets, aes(x = date, y = DAX)) +
+  geom_line()
+```
+
+```{r}
+ggplot(EuStockMarkets, aes(x = date, y = CAC)) +
   geom_line()
 ```
 
