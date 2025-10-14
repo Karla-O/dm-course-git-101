@@ -1,0 +1,38 @@
+---
+title: "Tidyr101"
+author: "Karla Otoude"
+format: html
+---
+
+```{r}
+here::i_am('dm-course-git-101.Rproj')
+library(here)
+```
+
+```{r}
+#| Message: false
+library(ggplot2)
+```
+
+```{r}
+data("EuStockMarkets")
+```
+
+
+
+## Displaying our time series
+
+```{r}
+ggplot(EuStockMarkets, aes(y = DAX, x = time(EuStockMarkets))) +
+  geom_line()
+```
+
+In the code we have 
+x = time(EuStockMarkets) = apply the time function to the data frame (EuStockMarkets)
+
+But this does not really match ggplot method of functioning so we do : 
+```{r}
+ggplot(EuStockMarkets, aes(y = DAX, x = time(EuStockMarkets))) +
+  geom_line()
+```
+
