@@ -85,13 +85,43 @@ In an inner join, we keep only matches between data frames 'according to the `jo
 planet_star |>
   mutate(mass_ratio = (Mass/(`Star Mass` * sun_to_earth))) |>
   slice_max(mass_ratio) |>
-  select(planet = PLANET, star = star_name, mass_ratio)
+  select(planet = PLANET, star = star_name, mass_ratio) |>
+  knitr::kable()
 ```
 
 
 
-### Anti join
+### Semi and Anti join
 
 ```{r}
-planet_with_no_star <- anti_join(planets, stars, by = join_by(Star_key))
+planet_without_star <- anti_join(planets, stars, by = join_by(Star_key))
+stars_without_planet <- anti_join(stars, planets, by = join_by(Star_key))
 ```
+Anti join finds the object in the first data frame (here planets) that does not have a match in the second data frame (here stars)
+
+It works both ways, we just have to swap the parameters
+
+
+Semi join is interesting when we have a data frame that is replicated in an inner join (Ex : we want a star that have matching planets to only appear once and not multiple time for each planet like in the inner join)
+```{r}
+stars_with_planets <- semi_join(stars, planets, by = join_by(Star_key))
+```
+
+We have `r nrow(planets_without_star)` planets without a corresponding star in the data base and `r nrow(stars_without_planet)`stars without planets described in the database 
+
+
+
+### Left and right join
+
+```{r}
+all_planets <- left_join(planets, stars, by = join_by(Star_key))
+all_stars <- right_join(planets, stars, by = join_by(Star_key))
+all_all <- full_join(planets, stars, by = join_by(Star_key))
+```
+
+Ex : left join included planets that do not have a corresponding star so we have some NA in the data frame
+
+
+All_stars = Lot of stars that do not have planets so a lot of observations 
+
+All_all = contains everything : some planets that do not have a star and some stars who do not have corresponding planets 
