@@ -13,5 +13,85 @@ library(here)
 library(ggplot2)
 library(dplyr)
 library(tidyr)
+library(vroom)
 ```
 
+
+When working with "tidy data" there are multiples rules : 
+1) A data frame contains only statistical units of a specific type 
+2) Each row is a statistical unit (Rows are statistical units and Columns are variables)
+
+However we may need different types of units and in this case we will need to have multiple data frames 
+
+A data base ~~ a collection of related data frames 
+It means that in a data base you will tolerate having different types of statistical units which will all be in their own data frame
+The core thing in relations is the notion of "keys"
+
+There are 2 types of keys : 
+- normal ones
+- foreign keys 
+
+
+Normal keys
+In order to link 2 data frames we need to have a column that acts as keys in each of the data frame (the goal is to be able to find an object by using this key, both data frames have this column in common)
+
+A key has to be unique in the data frame (to identify a particular object)
+
+We will assume that each data frame has a key 
+
+
+Sometimes we can also have a data frame made of 2 foreign keys to link 2 data frames together 
+
+Ex : 
+- A data frame with the course's name (key are nb attributed to each course, 1,2,3...)
+- A data frame with Rooms used for courses, their name and the nb of the room (Ex : Salle C, C212)
+- A data frame with the schedule : contains the nb of the course (1,2,3...), the room nb (C212) and the time at which we have the class (8:30 on the 4/11)
+=> "M to M" mapping, general case where keys each refer to multiple object individually, but together point to one particular case
+
+
+We also have to be careful to not have repeated information (Ex : we don't want the room capacity to be repeated for each course happening in this particular room), repeating keys is fine but not the info related to it
+
+
+```{r}
+planets <- vroom(here("data","planet.csv"))
+stars <- vroom(here("data", "Liststars.csv"))
+```
+
+```{r}
+sun_to_earth <- 333000
+```
+
+
+## Planet oriented analyses
+We look for the planet that has the largest ratio between its mass and the mass of its star, we cannot do that using the planets data frame only, we need to join it with the stars data frame 
+
+### Inner join 
+
+```{r}
+planet_star <- inner_join(planets, stars, by = join_by(Star_key))
+```
+
+The order of the join is not important in a inner join 
+
+Inner join : 
+- looks at the column mentioned by "join_by", here "Star_key" : the most simple join_by is when we have a common variable name (here "star key")
+- then for each value of the variable in stars we look for the same in planets (see if it exists) :
+-> if the value is found we add variables of each table (so every column for both table) except if they are the same
+-> The join is said to be inner bcs if it does not exist (if the key has no match in the other table) it is not added to the joined result 
+
+In an inner join, we keep only matches between data frames 'according to the `join_by` variable(s))
+
+```{r}
+planet_star |>
+  mutate(mass_ratio = (Mass/(`Star Mass` * sun_to_earth))) |>
+  slice_max(mass_ratio) |>
+  select(planet = PLANET, star = star_name, mass_ratio)
+```
+
+
+
+### Anti join
+
+```{r}
+planet_with_no_star <- anti_join(planets, stars, by = join_by(Star_key))
+```
