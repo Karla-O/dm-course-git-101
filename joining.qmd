@@ -125,3 +125,40 @@ Ex : left join included planets that do not have a corresponding star so we have
 All_stars = Lot of stars that do not have planets so a lot of observations 
 
 All_all = contains everything : some planets that do not have a star and some stars who do not have corresponding planets 
+
+## Star oriented analysis 
+If a star does not appear in the planet data frame, this means that this star has no associated habitable planet. We want to compute the distribution of average number of habitable planets per star
+
+Here we are missing the stars without planet.
+```{r}
+planet_star |>
+  summarise(n = n(), .by = Star_key) |>
+  ggplot(aes(x = n)) +
+  geom_bar()
+```
+
+We want to keep in the data set all stars, even those without an associated planet
+```{r}
+all_stars |>
+  summarise(n = n(), .by = Star_key) |>
+  ggplot(aes(x = n)) +
+  geom_bar()
+  
+```
+
+
+```{r}
+all_stars |>
+  summarise(n = sum(!is.na(planet_key)),
+            .by = Star_key) |>
+  ggplot(aes(x = n)) +
+  geom_bar()
+```
+
+```{r}
+all_stars |>
+  summarise(n = n_distinct(planet_key, na.rm = TRUE), .by = Star_key) |>
+  ggplot(aes(x = n)) + 
+  geom_bar()
+```
+
