@@ -36,7 +36,7 @@ But this does not really match ggplot method of functioning so we do :
 ```{r}
 EuStockMarkets <-
   EuStockMarkets |> 
-  as_tibble() |>  ## coule be as.data.frame
+  as_tibble() |>  ## could be as.data.frame
   mutate(date = as.numeric(time(EuStockMarkets)))
   
 ```
@@ -117,4 +117,113 @@ EuStockMarkets |>
   ggplot(aes(x = date, y = value, group = index)) +
   geom_line()
 ```
+
+```{r}
+EuStockMarkets |>
+  pivot_longer(everything()) |>
+  slice_head(n=10) |>
+  knitr::kable()
+```
+
+
+```{r}
+EuStockMarkets |>
+  pivot_longer(DAX | SMI) |>
+  slice_head(n=10) |>
+  knitr::kable()
+```
+
+The goal is to split one line from the original data frame into as many rows as each variable pivoted
+-> here we have one original line split into one row for its DAX and one row for its SMI but the CAC, the FTSE and the date are the same since they were originally 2 columns for the same row
+
+One useful way to pivot is to to pivot everything except the date, so that the date can be repeated in the new table and serves as a way to know which lines share the same date 
+-> date serves an index to know how were the lines in the data before pivoting and we can go back to the original format of the data
+
+Generally it's useful to keep one column as an index when pivoting
+
+To list things to pivot in `pivot_longer` we can do : 
+- pivot_longer(DAX | SMI)
+- pivot_longer(c (DAX , SMI))
+
+
+
+Pivot longer used when we want to compute different values belonging to the same row (Ex with EuStockMarkets : pivot longer to compute the mean of all index for a certain period)
+-> when we pivot something that was row oriented becomes column oriented
+-> we can then use .by and the index to compute the diff elements of the row 
+```{r}
+EuStockMarkets |>
+  select(!FTSE) |>
+  pivot_longer(!date) |>
+  summarise(avg_stock = mean(value), .by = date) |>
+  slice_head(n=10)
+```
+
+### Alternative with rowwise
+```{r}
+EuStockMarkets |>
+  select(!FTSE) |>
+  rowwise() |>
+  summarise(date, avg_stock = mean(c(DAX, SMI, CAC)))
+```
+
+
+
+## Reverse operation : pivot wider
+
+```{r}
+EuLong <-
+  EuStockMarkets |>
+  pivot_longer(!date)
+  
+```
+
+```{r}
+EuLong |>
+  pivot_wider() |>
+  slice_head(n=10) |>
+  knitr::kable()
+```
+(Here it pivoted nicely only bcs it recognized a data frame pivoted by pivot longer and could automatically pivot it once again)
+
+
+
+```{r}
+EuLong |>
+  pivot_wider(id_cols = date) |>  ## We use id-cols to specify which column of the table is the index for pivoting
+  slice_head(n=10)|>
+  knitr::kable()
+```
+
+```{r}
+data("diamonds")
+diamonds |>
+  summarise(count = n(), .by = c(cut, color))
+```
+
+```{r}
+data("diamonds")
+dgroup <-
+diamonds |>
+  summarise(count = n(),median_price = median(price), .by = c(cut,color))
+```
+
+```{r}
+dgroup |>
+  select(!count) |>
+  pivot_wider(id_cols = cut, names_from = color, values_from = median_price)
+```
+
+```{r}
+dgroup |>
+  pivot_wider(id_cols = cut, names_from = color, values_from = median_price)
+```
+
+Missing data support (simulation of what would happen if we had missing data)
+```{r}
+set.seed(42) #always use the same random sample set
+dgroup |>
+  slice_sample(n=25) |> #random sample from dgroup to simulate missing data
+  pivot_wider(id_cols = cut, names_from = color, values_from = count)
+```
+We can see there is missing data
 
